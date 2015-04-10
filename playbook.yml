@@ -1,0 +1,61 @@
+# This assumes AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, EC2_REGION environment
+# variables, a ec2 key pair 'sandbox1'
+---
+- name: Provision ec2 instance
+  hosts: localhost
+  connection: local
+  gather_facts: False
+  tasks:
+    - name: a ec2 group
+      ec2_group:
+        name: sandbox1
+        description: a sandbox1 ec2 group
+        rules:
+          - proto: tcp
+            from_port: 80
+            to_port: 80
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+
+    - name: Launch instance
+      ec2:
+          instance_type: t1.micro
+          image: ami-592d4b2e # ubuntu 14.04 eu-west-1 64-bit ebs
+          wait: yes
+          key_name: sandbox1
+          group: sandbox1
+          instance_tags:
+              sandbox-ansible: true
+          exact_count: 1
+          count_tag: sandbox-ansible
+      register: ec2_instance
+
+    - name: Add new instance to host group
+      add_host:
+          hostname: "{{ ec2_instance.tagged_instances[0].public_ip }}"
+          ansible_ssh_user: ubuntu
+          ansible_ssh_private_key_file: sandbox1.pem
+          groupname: launched
+
+
+- name: Provision ec2 instance
+  hosts: launched
+  tasks:
+    - name: global package
+      apt: name=git state=installed
+
+    - name: application code
+      git: repo=git@bitbucket.org:acme/project.git dest=/home/ubuntu/voting/
+      notify: restart uwsgi
+
+    #- name: collectstatic
+    #  django: django command=collectstatic managepy=/app/app/manage.py
+
+    #- name: python dependencies
+    #  pip: name=Django version=1.8 virtualenv=/app/venv/
+
+    #- name: database migration
+    #  django: command=migrate managepy=/app/app/manage.py

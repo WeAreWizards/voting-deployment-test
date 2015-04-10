@@ -1,0 +1,4 @@
+*.un~
+*.sqlite3
+*.pem
+*.pyc
