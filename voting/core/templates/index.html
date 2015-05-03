@@ -1,0 +1,65 @@
+<html>
+<head>
+  <title>Composers stand-off</title>
+  <style>
+    body {
+      background: #e9e9e9;
+      margin: 0px;
+      padding: 0px;
+    }
+    * {
+      font-size: 24px;
+    }
+    .main_contrast {
+      color: #eb0f91;
+    }
+    header {
+      height: 50%;
+      background: #333;
+      position: relative;
+    }
+    .header_contrast {
+      color: #fff;
+    }
+    header #header-content {
+      color: #f9e300;
+      bottom: 0px;
+      position: absolute;
+      text-align: center;
+      width: 100%;
+    }
+    #container {
+      margin-top: 50px;
+      width: 100%;
+      text-align: center;
+    }
+    #container button {
+      color: #555;
+    }
+  </style>
+<head>
+<body>
+  <header>
+    <h1 id="header-content">
+      {{ composer }} {{ composer_quality.description }}.
+    </h1>
+  </header>
+
+  <div id="container">
+    <h1>Who do you think {{ random_quality.description }}?</h1>
+
+    <form method="POST" action="{% url "vote" %}">
+      {% csrf_token %}
+
+      <input type="hidden" name="quality" value="{{random_quality.id}}"/>
+
+      <button type="submit" name="composer" value="{{ composer_1.id }}">{{ composer_1.name }}</button>
+
+      or
+
+      <button type="submit" name="composer" value="{{ composer_2.id }}">{{ composer_2.name }}</button>
+
+    </form>
+  </div>
+</body>
+</html>

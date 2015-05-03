@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Adjective, Composer
+from .models import Quality, Composer
 
-admin.site.register(Adjective)
+admin.site.register(Quality)
 admin.site.register(Composer)
