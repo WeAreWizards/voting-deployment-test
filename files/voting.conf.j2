@@ -1,0 +1,12 @@
+server {
+  listen 80 default_server;
+  server_name _;
+
+  location /static/ {
+      alias {{repo_path}}/voting/static/;
+  }
+
+  location / {
+    proxy_pass http://localhost:8000;
+  }
+}

@@ -1,0 +1,8 @@
+[uwsgi]
+base = {{project_path}}
+pythonpath = {{project_path}}
+plugins = python
+module = voting.wsgi:application
+http-socket = 0.0.0.0:8000
+uid = ubuntu
+gid = ubuntu

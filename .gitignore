@@ -2,3 +2,8 @@
 *.sqlite3
 *.pem
 *.pyc
+voting.egg-info/
+voting/voting.egg-info/
+voting/voting/static/
+state.nixops
+result

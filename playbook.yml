@@ -1,61 +1,97 @@
-# This assumes AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, EC2_REGION environment
-# variables, a ec2 key pair 'sandbox1'
 ---
 - name: Provision ec2 instance
   hosts: localhost
   connection: local
   gather_facts: False
   tasks:
-    - name: a ec2 group
+    - name: an ec2 security group
       ec2_group:
         name: sandbox1
-        description: a sandbox1 ec2 group
+        description: sandbox1 ec2 security group
         rules:
-          - proto: tcp
-            from_port: 80
-            to_port: 80
-            cidr_ip: 0.0.0.0/0
-          - proto: tcp
-            from_port: 22
-            to_port: 22
-            cidr_ip: 0.0.0.0/0
+          - { proto: "tcp", from_port: 80, to_port: 80, cidr_ip: "0.0.0.0/0" }
+          - { proto: "tcp", from_port: 22, to_port: 22, cidr_ip: "0.0.0.0/0" }
+        rules_egress:
+          - { proto: "all", cidr_ip: "0.0.0.0/0" }
 
     - name: Launch instance
       ec2:
           instance_type: t1.micro
-          image: ami-592d4b2e # ubuntu 14.04 eu-west-1 64-bit ebs
+          image: ami-cf7a12b8 # ubuntu 14.04 eu-west-1 64-bit ebs
           wait: yes
           key_name: sandbox1
           group: sandbox1
           instance_tags:
               sandbox-ansible: true
+              Name: sandbox1
           exact_count: 1
           count_tag: sandbox-ansible
       register: ec2_instance
 
     - name: Add new instance to host group
       add_host:
-          hostname: "{{ ec2_instance.tagged_instances[0].public_ip }}"
+          hostname: "{{ item.public_ip }}"
           ansible_ssh_user: ubuntu
           ansible_ssh_private_key_file: sandbox1.pem
           groupname: launched
+      with_items: ec2_instance.tagged_instances
 
+    - name: Wait until SSH is available
+      local_action:
+        module: wait_for
+        host: "{{ item.public_ip }}"
+        port: 22
+        delay: 5
+        search_regex: OpenSSH
+      with_items: ec2_instance.tagged_instances
 
-- name: Provision ec2 instance
+- name: Configure server
   hosts: launched
+  vars:
+    repo_path: /home/ubuntu/voting/
+    project_path: /home/ubuntu/voting/voting/
   tasks:
     - name: global package
-      apt: name=git state=installed
+      apt: name={{item}} state=installed
+      with_items:
+        - python-virtualenv
+        - git
+        - uwsgi
+        - uwsgi-plugin-python
+        - nginx
+      sudo: yes
+
+    - name: python dependencies
+      pip: name=django version=1.6.6
+      sudo: yes
+
+    - template:
+        src=files/voting.conf.j2
+        dest=/etc/nginx/sites-enabled/default
+        owner=root
+      sudo: yes
+      notify: restart nginx
 
     - name: application code
-      git: repo=git@bitbucket.org:acme/project.git dest=/home/ubuntu/voting/
+      git: repo=https://gowtier@bitbucket.org/gowtier/voting.git dest={{repo_path}}
+
+    - django_manage: command=collectstatic app_path={{ project_path }}
+
+    - django_manage: command=syncdb app_path={{ project_path }}
+
+    - name: uwsgi configuration
+      template:
+        src=files/voting.ini.j2
+        dest=/etc/uwsgi/apps-enabled/voting.ini
+        owner=root
       notify: restart uwsgi
+      sudo: yes
 
-    #- name: collectstatic
-    #  django: django command=collectstatic managepy=/app/app/manage.py
+  handlers:
+    - name: restart uwsgi
+      service: name=uwsgi state=restarted
+      sudo: yes
 
-    #- name: python dependencies
-    #  pip: name=Django version=1.8 virtualenv=/app/venv/
-
-    #- name: database migration
-    #  django: command=migrate managepy=/app/app/manage.py
+    - name: restart nginx
+      service: name=nginx state=restarted
+      sudo: yes
