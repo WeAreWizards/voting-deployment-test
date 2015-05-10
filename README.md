@@ -67,7 +67,7 @@ Or to access an environment with the package installed
 $ nix-shell
 ```
 
-To deployment happens in two phases, firstly by creating the deployment
+The deployment happens in two phases, firstly by creating the deployment
 
 ```bash
 $ nixops create server.nix --state nixops.state --name voting
