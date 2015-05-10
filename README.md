@@ -35,13 +35,13 @@ variables:
 Also, a AWS keypair named `sandbox1` should be created in AWS and saved
 locally as `sandbox1.pem`.
 
-Ansible and boto must also be installed:
+Ansible and boto must also be installed
 
 ```bash
 $ pip install ansible boto
 ```
 
-Finally to actually run the deployment:
+Finally to actually run the deployment
 
 ```bash
 $ ansible-playbook playbook.yml
@@ -55,7 +55,7 @@ Install Nix http://nixos.org/nix/download.html and then nixops with
 $ nix-env -i nixops
 ```
 
-Then to build the package :
+Then to build the package
 
 ```bash
 $ nix-build
