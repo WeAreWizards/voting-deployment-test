@@ -32,8 +32,8 @@ variables:
 - AWS_SECRET_ACCESS_KEY
 - EC2_REGION
 
-Also, a AWS keypair named 'sandbox1' should be created in AWS and saved
-locally as 'sandbox1.pem'.
+Also, a AWS keypair named `sandbox1` should be created in AWS and saved
+locally as `sandbox1.pem`.
 
 Ansible and boto must also be installed:
 
@@ -47,9 +47,13 @@ Finally to actually run the deployment:
 $ ansible-playbook playbook.yml
 ```
 
-## Nix deployment
+## Nix(ops) deployment
 
-Install Nix http://nixos.org/nix/download.html
+Install Nix http://nixos.org/nix/download.html and then nixops with
+
+```bash
+$ nix-env -i nixops
+```
 
 Then to build the package :
 
@@ -63,11 +67,13 @@ Or to access an environment with the package installed
 $ nix-shell
 ```
 
-To deploy 
+To deploy happens in two phases, firstly one to create the deployment
 
 ```bash
 $ nixops create server.nix --state nixops.state --name voting
 ```
+
+And then to execute the deployment
 
 ```bash
 $ nixops list --state state.nixops
