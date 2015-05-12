@@ -12,7 +12,8 @@ deployed using Ansible and Nix.
 
     # The nix configuration
     default.nix # default nix expression for the app
-    server.nix # nixops configuration
+    voting.nix # nixops logical configuration
+    voting-aws.nix # nixops physical configuration
     state.nixops # state file (not commited)
 
     # Python project files
@@ -70,11 +71,11 @@ $ nix-shell
 The deployment happens in two phases, firstly by creating the deployment
 
 ```bash
-$ nixops create server.nix --state nixops.state --name voting
+$ nixops create ./voting.nix ./voting-aws.nix --state state.nixops --name voting
 ```
 
 And then by executing the deployment
 
 ```bash
-$ nixops list --state state.nixops
+$ nixops deploy --state state.nixops
 ```

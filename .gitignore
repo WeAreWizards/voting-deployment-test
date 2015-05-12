@@ -7,3 +7,4 @@ voting/voting.egg-info/
 voting/voting/static/
 state.nixops
 result
+dist/

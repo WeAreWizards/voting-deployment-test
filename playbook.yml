@@ -51,7 +51,7 @@
     repo_path: /home/ubuntu/voting/
     project_path: /home/ubuntu/voting/voting/
   tasks:
-    - name: global package
+    - name: global packages
       apt: name={{item}} state=installed
       with_items:
         - python-virtualenv

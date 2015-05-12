@@ -1,1 +1,3 @@
 recursive-include voting/voting/static *
+recursive-include voting/core/fixtures *
+recursive-include voting/core/templates *
